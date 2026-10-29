@@ -217,7 +217,3 @@ administra el origen.
 - **Agente** (LangChain + OpenRouter) que responde preguntas en lenguaje natural sobre las campañas.
   No decide la prioridad: consulta las tablas con herramientas y explica los resultados. Su contexto de
   negocio, el diccionario de tablas y las reglas de respuesta están en `agent/context.md`.
-
-## Tiempo utilizado
-
-[Completar: horas en la parte obligatoria y en los extras]
