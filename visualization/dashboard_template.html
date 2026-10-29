@@ -1,0 +1,1197 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rappi Ads Campaign Health</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!--__CHARTJS__-->
+<style>
+  :root {
+    --bg: #fff7f3;
+    --card: #ffffff;
+    --text: #23262f;
+    --muted: #7a7f8c;
+    --border: #f3e6e0;
+    --orange: #ff441f;
+    --orange-2: #ff6b4a;
+    --orange-soft: #fff0eb;
+    --orange-grad: linear-gradient(135deg, #ff441f 0%, #ff7a50 100%);
+    --shadow: 0 1px 2px rgba(35, 38, 47, .04), 0 8px 24px rgba(255, 68, 31, .08);
+    --shadow-hover: 0 2px 4px rgba(35, 38, 47, .05), 0 14px 32px rgba(255, 68, 31, .14);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Poppins", "Segoe UI", system-ui, sans-serif; background: var(--bg); color: var(--text); font-size: 13.5px; }
+  button { font: inherit; cursor: pointer; }
+
+  /* Encabezado */
+  header { position: sticky; top: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+           padding: 20px 32px; background: rgba(255, 255, 255, .94); backdrop-filter: blur(8px); box-shadow: 0 4px 18px rgba(255, 68, 31, .10);
+           border-bottom: 3px solid transparent; border-image: var(--orange-grad) 1; }
+  .brand { display: flex; align-items: center; gap: 22px; }
+  .brand img { height: 52px; display: block; }
+  .brand .wordmark { font-weight: 700; font-size: 34px; color: var(--text); }
+  .brand .wordmark span { color: var(--orange); }
+  .brand .divider { width: 2px; height: 46px; border-radius: 2px; background: var(--border); }
+  .brand h1 { margin: 0; font-size: 24px; font-weight: 700; line-height: 1.15; letter-spacing: -.3px; }
+  .brand h1 small { display: block; font-size: 14px; font-weight: 400; color: var(--muted); letter-spacing: 0; margin-top: 2px; }
+  .pills { display: flex; gap: 10px; flex-wrap: wrap; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 999px; background: var(--orange-soft); color: var(--text); font-size: 13.5px; }
+  .pill b { font-weight: 600; }
+  .pill .live { width: 7px; height: 7px; border-radius: 50%; background: var(--orange); box-shadow: 0 0 0 3px rgba(255, 68, 31, .2); }
+
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr) 390px; gap: 20px; padding: 20px 28px 28px; align-items: start; }
+  .layout.chat-closed { grid-template-columns: minmax(0, 1fr); }
+  .layout.chat-closed #chatPanel { display: none; }
+  @media (max-width: 1150px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+  @media (max-width: 600px) {
+    .layout { padding: 16px; }
+    header { padding: 12px 16px; }
+    .brand img { height: 36px; }
+    .brand h1 { font-size: 18px; }
+    .brand h1 small { font-size: 12px; }
+  }
+
+  .card { background: var(--card); border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow); transition: box-shadow .2s; }
+  .card:hover { box-shadow: var(--shadow-hover); }
+  .card h2 { margin: 0 0 14px; font-size: 14.5px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .card h2 .title { display: flex; align-items: center; gap: 8px; }
+  .card h2 .title::before { content: ""; width: 4px; height: 16px; border-radius: 4px; background: var(--orange-grad); }
+  .card h2 small { color: var(--muted); font-weight: 400; font-size: 12px; }
+
+  /* Filtros */
+  .filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; align-items: end; }
+  .filters label { display: block; font-size: 11.5px; font-weight: 500; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .3px; }
+  .filters select, .filters input { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 10px; font: inherit; background: #fffaf8; color: var(--text); transition: border-color .15s, box-shadow .15s; }
+  .filters select:focus, .filters input:focus { outline: none; border-color: var(--orange-2); box-shadow: 0 0 0 3px rgba(255, 68, 31, .15); }
+  .filter-actions { display: flex; gap: 8px; }
+  .filter-actions .btn { flex: 1; white-space: nowrap; }
+  .btn.on { background: var(--orange-soft); border-color: var(--orange-2); color: var(--orange); }
+  .more-filters { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border); }
+  .btn { padding: 8px 14px; border-radius: 10px; border: 1px solid var(--border); background: #fff; color: var(--text); transition: all .15s; }
+  .btn:hover { border-color: var(--orange); color: var(--orange); }
+  .btn-accent { background: var(--orange-grad); color: #fff; border: none; box-shadow: 0 4px 12px rgba(255, 68, 31, .3); }
+  .btn-accent:hover { color: #fff; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(255, 68, 31, .38); }
+  .btn-accent:disabled { opacity: .6; transform: none; }
+
+  /* KPIs */
+  .kpis { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 14px; margin: 20px 0; }
+  @media (max-width: 1500px) { .kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  @media (max-width: 560px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .kpi .head { line-height: 1.2; min-height: 28px; }
+  .kpi { background: var(--card); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow); position: relative; overflow: hidden; transition: transform .2s, box-shadow .2s; }
+  .kpi:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+  .kpi .head { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); font-weight: 500; }
+  .kpi .icon { width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; background: var(--orange-soft); color: var(--orange); font-size: 14px; }
+  .kpi .value { font-size: 25px; font-weight: 700; margin-top: 10px; letter-spacing: -.5px; }
+  .kpi .sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .kpi.highlight { background: var(--orange-grad); color: #fff; box-shadow: 0 10px 28px rgba(255, 68, 31, .35); }
+  .kpi.highlight .head, .kpi.highlight .sub { color: rgba(255, 255, 255, .85); }
+  .kpi.highlight .icon { background: rgba(255, 255, 255, .22); color: #fff; }
+  .progress { height: 6px; border-radius: 6px; background: var(--orange-soft); margin-top: 8px; overflow: hidden; }
+  .progress span { display: block; height: 100%; border-radius: 6px; background: var(--orange-grad); transition: width .3s; }
+
+  .grid-2 { display: grid; grid-template-columns: 1.7fr 1fr; gap: 20px; margin-bottom: 20px; }
+  .grid-2b { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+  @media (max-width: 850px) { .grid-2, .grid-2b { grid-template-columns: 1fr; } }
+  .chart-box { position: relative; height: 270px; }
+  .toggles { display: inline-flex; gap: 8px; flex-wrap: wrap; }
+  .metric-note { font-size: 12px; color: var(--muted); margin: -6px 0 8px; }
+  .metric-note i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin: 0 4px 0 8px; vertical-align: -1px; }
+  .grid-2b .priority-list { max-height: 470px; }
+  .toggle { display: inline-flex; background: var(--orange-soft); border-radius: 999px; padding: 3px; }
+  .toggle button { border: none; background: transparent; padding: 4px 12px; font-size: 12px; border-radius: 999px; color: var(--muted); }
+  .toggle button.active { background: #fff; color: var(--orange); font-weight: 600; box-shadow: 0 2px 6px rgba(255, 68, 31, .18); }
+
+  /* Atender primero */
+  .priority-list { list-style: none; margin: 0; padding: 0; max-height: 270px; overflow-y: auto; }
+  .priority-list li { display: flex; gap: 12px; align-items: flex-start; padding: 10px; border-radius: 12px; transition: background .15s; }
+  .priority-list li:hover { background: #fff8f5; }
+  .score { min-width: 44px; height: 44px; display: grid; place-items: center; font-weight: 700; border-radius: 12px; background: var(--orange-grad); color: #fff; box-shadow: 0 4px 10px rgba(255, 68, 31, .25); }
+  .score.mid { background: #ffb199; box-shadow: none; }
+  .score.low { background: var(--orange-soft); color: var(--orange); box-shadow: none; }
+  .priority-list .info { flex: 1; min-width: 0; }
+  .priority-list .reason { color: var(--muted); font-size: 12px; margin-top: 3px; }
+  .link-btn { border: none; background: var(--orange-soft); color: var(--orange); padding: 5px 10px; font-size: 12px; border-radius: 999px; white-space: nowrap; font-weight: 500; }
+  .link-btn:hover { background: var(--orange); color: #fff; }
+
+  /* Tabla */
+  .table-wrap { overflow: auto; max-height: 480px; border-radius: 12px; border: 1px solid var(--border); }
+  .detail-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .detail-table th { position: sticky; top: 0; background: #fff3ee; text-align: left; padding: 10px 8px; font-weight: 600; color: #5b4a44; cursor: pointer; white-space: nowrap; user-select: none; z-index: 1; }
+  .detail-table th:hover { color: var(--orange); }
+  .detail-table td { padding: 8px; border-top: 1px solid #f7eeea; white-space: nowrap; }
+  .detail-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .detail-table tbody tr:nth-child(even) td { background: #fffcfb; }
+  .detail-table tbody tr:hover td { background: #fff3ee; }
+  .no-score { font-size: 11px; color: var(--muted); background: #f4f1ef; padding: 2px 8px; border-radius: 999px; cursor: help; }
+  .bad { color: #e5341a; font-weight: 600; }
+  .good { color: #1f9d63; font-weight: 500; }
+  .badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 10.5px; font-weight: 600; letter-spacing: .2px; }
+  .bar { position: relative; background: #f6eeea; border-radius: 999px; height: 18px; min-width: 96px; overflow: hidden; }
+  .bar span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; }
+  .bar em { position: absolute; right: 8px; top: 0; font-size: 11px; font-style: normal; line-height: 18px; font-weight: 600; }
+
+  /* Panel del agente */
+  #chatPanel { position: sticky; top: 112px; display: flex; flex-direction: column; height: calc(100vh - 134px); max-height: 900px; padding: 0; overflow: hidden; }
+  @media (max-width: 1150px) { #chatPanel { position: static; height: 620px; } }
+  .chat-head { padding: 16px 18px; background: var(--orange-grad); color: #fff; }
+  .chat-head .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .chat-head h2 { margin: 0; font-size: 15px; font-weight: 600; }
+  .chat-head .hide { border: none; background: rgba(255, 255, 255, .2); color: #fff; border-radius: 999px; padding: 4px 10px; font-size: 12px; }
+  .chat-head .hide:hover { background: rgba(255, 255, 255, .32); }
+  .agent-status { font-size: 12px; margin-top: 6px; display: flex; align-items: center; gap: 6px; color: rgba(255, 255, 255, .9); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #ffd7cc; }
+  .dot.on { background: #7dffb6; box-shadow: 0 0 0 3px rgba(125, 255, 182, .3); }
+  .dot.off { background: #2b2b2b; }
+  .messages { flex: 1; overflow-y: auto; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; background: #fffaf8; }
+  .msg { padding: 10px 13px; border-radius: 14px; line-height: 1.5; max-width: 92%; overflow-wrap: anywhere; font-size: 13px; }
+  .msg.user { align-self: flex-end; background: var(--orange-grad); color: #fff; border-bottom-right-radius: 4px; box-shadow: 0 4px 12px rgba(255, 68, 31, .25); }
+  .msg.bot { align-self: flex-start; background: #fff; border: 1px solid var(--border); border-bottom-left-radius: 4px; box-shadow: 0 2px 8px rgba(35, 38, 47, .04); }
+  .msg.bot ul, .msg.bot ol { margin: 4px 0; padding-left: 18px; }
+  .msg.bot p { margin: 0 0 6px; }
+  .msg.bot p:last-child { margin-bottom: 0; }
+  .msg.bot b { color: #1c1e24; }
+  .chat-table { overflow-x: auto; margin: 6px 0 8px; border-radius: 8px; border: 1px solid var(--border); }
+  .chat-table table { border-collapse: collapse; font-size: 11.5px; width: 100%; }
+  .chat-table th { background: #fff3ee; text-align: left; padding: 6px 8px; white-space: nowrap; font-weight: 600; }
+  .chat-table td { padding: 5px 8px; border-top: 1px solid #f7eeea; white-space: nowrap; }
+  .msg .tools { font-size: 11px; color: var(--muted); margin-top: 8px; padding-top: 6px; border-top: 1px dashed var(--border); }
+  .msg.error { background: #fff1ee; color: #c2410c; border: 1px solid #ffd2c6; }
+  .typing { color: var(--muted); }
+  .typing::after { content: " ●●●"; letter-spacing: 2px; color: var(--orange-2); animation: blink 1.2s infinite; }
+  @keyframes blink { 50% { opacity: .3; } }
+  .suggestions { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 18px; background: #fffaf8; }
+  .suggestions button { border: 1px solid #ffd2c6; background: #fff; color: #c2410c; border-radius: 999px; padding: 5px 11px; font-size: 12px; transition: all .15s; }
+  .suggestions button:hover { background: var(--orange); border-color: var(--orange); color: #fff; }
+  .chat-input { display: flex; gap: 8px; padding: 12px 18px 16px; border-top: 1px solid var(--border); background: #fff; }
+  .chat-input textarea { flex: 1; resize: none; height: 44px; padding: 11px 14px; border: 1px solid var(--border); border-radius: 22px; font: inherit; background: #fffaf8; }
+  .chat-input textarea:focus { outline: none; border-color: var(--orange-2); box-shadow: 0 0 0 3px rgba(255, 68, 31, .15); }
+  .chat-input .btn-accent { border-radius: 22px; padding: 0 18px; }
+  .open-chat { position: fixed; right: 28px; bottom: 28px; border-radius: 999px; padding: 12px 20px; z-index: 20; }
+  .hidden { display: none !important; }
+
+  /* Pestañas */
+  .tabs { display: flex; gap: 6px; background: var(--orange-soft); padding: 5px; border-radius: 999px; }
+  .tabs button { border: none; background: transparent; padding: 10px 24px; border-radius: 999px; font-size: 14.5px; font-weight: 600; color: var(--muted); transition: all .15s; }
+  .tabs button:hover { color: var(--orange); }
+  .tabs button.active { background: var(--orange-grad); color: #fff; box-shadow: 0 4px 12px rgba(255, 68, 31, .3); }
+
+  /* Insights */
+  .ins-hero { background: var(--orange-grad); color: #fff; border-radius: var(--radius); padding: 22px 26px; margin-bottom: 20px; box-shadow: 0 10px 28px rgba(255, 68, 31, .3); }
+  .ins-hero h2 { margin: 0 0 6px; font-size: 22px; }
+  .ins-hero p { margin: 0; opacity: .92; font-size: 13.5px; }
+  .insight { margin-bottom: 20px; }
+  .q-head { display: flex; gap: 16px; align-items: flex-start; }
+  .q-num { min-width: 46px; height: 46px; border-radius: 13px; background: var(--orange-grad); color: #fff; font-weight: 700; font-size: 17px; display: grid; place-items: center; box-shadow: 0 4px 12px rgba(255, 68, 31, .3); }
+  .q-title { font-size: 18px; font-weight: 600; margin: 0; }
+  .q-answer { font-size: 15px; margin: 6px 0 0; line-height: 1.5; }
+  .q-answer b { color: var(--orange); }
+  .ins-body { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 24px; margin-top: 18px; align-items: start; }
+  @media (max-width: 1000px) { .ins-body { grid-template-columns: minmax(0, 1fr); } }
+  .ins-chart { position: relative; height: 320px; }
+  .ins-text h4 { font-size: 11.5px; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); margin: 0 0 8px; }
+  .ins-text ul { margin: 0 0 16px; padding-left: 18px; line-height: 1.55; }
+  .ins-text li { margin-bottom: 6px; }
+  .reco { background: var(--orange-soft); border-left: 4px solid var(--orange); padding: 12px 14px; border-radius: 10px; line-height: 1.55; }
+  .ins-actions { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+  .chart-note { font-size: 11.5px; color: var(--muted); margin: 6px 0 0; }
+  .mini-table { margin-top: 14px; }
+  .mini-table .table-wrap { max-height: 300px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <img id="logo" src="__LOGO_SRC__" alt="Rappi Ads">
+    <div class="wordmark hidden" id="wordmark">Rappi <span>Ads</span></div>
+    <div class="divider"></div>
+    <h1>Campaign Health<small>Rendimiento y priorización de campañas</small></h1>
+  </div>
+  <nav class="tabs" id="tabs">
+    <button data-view="dashboard" class="active">Dashboard</button>
+    <button data-view="insights">Insights</button>
+  </nav>
+  <div class="pills">
+    <span class="pill"><span class="live"></span>Actualizado <b id="updatedAt"></b></span>
+    <span class="pill">Corte de métricas <b id="asOf"></b></span>
+  </div>
+</header>
+
+<div class="layout" id="layout">
+  <main>
+   <div id="viewDashboard">
+    <section class="card">
+      <div class="filters">
+        <div><label for="fCountry">Country</label><select id="fCountry"></select></div>
+        <div><label for="fMaker">Maker</label><select id="fMaker"></select></div>
+        <div><label for="fHealth">Campaign Health</label><select id="fHealth"></select></div>
+        <div><label for="fFrom">Desde</label><input type="date" id="fFrom"></div>
+        <div><label for="fTo">Hasta</label><input type="date" id="fTo"></div>
+        <div class="filter-actions">
+          <button class="btn" id="moreBtn">Más filtros</button>
+          <button class="btn" id="resetBtn">Limpiar</button>
+        </div>
+      </div>
+      <!-- Trademark y Campaign quedan ocultos por defecto para no recargar la vista -->
+      <div class="filters more-filters hidden" id="moreFilters">
+        <div><label for="fTrademark">Trademark</label><select id="fTrademark"></select></div>
+        <div><label for="fCampaign">Campaign</label><select id="fCampaign"></select></div>
+      </div>
+    </section>
+
+    <section class="kpis">
+      <div class="kpi"><div class="head"><span class="icon">$</span>Budget</div><div class="value" id="kBudget"></div><div class="sub" id="kCampaigns"></div></div>
+      <div class="kpi"><div class="head"><span class="icon">↗</span>Spend</div><div class="value" id="kSpend"></div><div class="sub">en el rango de fechas</div></div>
+      <div class="kpi"><div class="head"><span class="icon">◔</span>Budget Consumed</div><div class="value" id="kConsumed"></div><div class="progress"><span id="kConsumedBar"></span></div><div class="sub" id="kRemaining"></div></div>
+      <div class="kpi"><div class="head"><span class="icon">🛒</span>Attributed Sales</div><div class="value" id="kSales"></div><div class="sub" id="kOrders"></div></div>
+      <div class="kpi highlight"><div class="head"><span class="icon">×</span>ROAS</div><div class="value" id="kRoas"></div><div class="sub">ventas por cada US$1 invertido</div></div>
+      <div class="kpi"><div class="head"><span class="icon">☝</span>CTR</div><div class="value" id="kCtr"></div><div class="sub">clics / impresiones</div></div>
+      <div class="kpi"><div class="head"><span class="icon">👁</span>CPM</div><div class="value" id="kCpm"></div><div class="sub">costo por mil impresiones</div></div>
+    </section>
+
+    <section class="grid-2">
+      <div class="card">
+        <h2><span class="title">Evolución de inversión y ventas</span>
+          <span class="toggle" id="trendToggle"><button data-v="day" class="active">Día</button><button data-v="week">Semana</button></span>
+        </h2>
+        <div class="chart-box"><canvas id="trendChart"></canvas></div>
+      </div>
+      <div class="card">
+        <h2><span class="title">Campañas por estado</span><small>clic para filtrar</small></h2>
+        <div class="chart-box"><canvas id="healthChart"></canvas></div>
+      </div>
+    </section>
+
+    <section class="grid-2b">
+      <div class="card">
+        <h2><span class="title">Rendimiento frente a la meta</span>
+          <span class="toggles">
+            <span class="toggle" id="metricToggle"><button data-v="ROAS" class="active">ROAS</button><button data-v="CTR">CTR</button><button data-v="CPM">CPM</button></span>
+            <span class="toggle" id="dimToggle"><button data-v="COUNTRY" class="active">País</button><button data-v="MAKER">Maker</button></span>
+          </span>
+        </h2>
+        <div class="metric-note" id="metricNote"></div>
+        <div class="chart-box" id="metricBox"><canvas id="metricChart"></canvas></div>
+      </div>
+      <div class="card">
+        <h2><span class="title">Atender primero</span><small>activas que aún se pueden corregir</small></h2>
+        <ul class="priority-list" id="priorityList"></ul>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2><span class="title">Detalle de campañas</span><small id="tableCount"></small></h2>
+      <div class="table-wrap">
+        <table class="detail-table">
+          <thead><tr id="tableHead"></tr></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </section>
+   </div>
+
+   <!-- Pestaña Insights: se llena con los resultados de sql/insights.sql -->
+   <div id="viewInsights" class="hidden">
+    <section class="ins-hero">
+      <h2>5 preguntas sobre las campañas</h2>
+      <p>Cada respuesta sale de una consulta SQL sobre la tabla limpia (sql/insights.sql) y se explica
+        qué significa para el negocio. Se excluyen las campañas canceladas. Corte de métricas: <b id="insAsOf"></b>.</p>
+    </section>
+    <div id="insightCards"></div>
+   </div>
+  </main>
+
+  <aside class="card" id="chatPanel">
+    <div class="chat-head">
+      <div class="row"><h2>Pídele al agente que te explique</h2><button class="hide" id="closeChat">Ocultar</button></div>
+      <div class="agent-status"><span class="dot" id="agentDot"></span><span id="agentStatus">Verificando conexión...</span></div>
+    </div>
+    <div class="messages" id="messages">
+      <div class="msg bot">Hola 👋 Puedo explicarte cómo van las campañas, decirte cuáles atender primero y por qué, o revisar los problemas de calidad de los datos. Tengo en cuenta los filtros que tengas seleccionados.</div>
+    </div>
+    <div class="suggestions" id="suggestions">
+      <button>¿Qué campañas debo atender primero?</button>
+      <button>Explícame lo que veo con los filtros actuales</button>
+      <button>¿Qué país está peor frente a su meta?</button>
+      <button>¿Qué problemas de calidad tienen los datos?</button>
+    </div>
+    <div class="chat-input">
+      <textarea id="chatText" placeholder="Escribe tu pregunta..."></textarea>
+      <button class="btn btn-accent" id="sendBtn">Enviar</button>
+    </div>
+  </aside>
+</div>
+<button class="btn btn-accent open-chat hidden" id="openChat">💬 Pídele al agente</button>
+
+<script>
+const DATA = /*__DATA__*/null;
+const AGENT_URL = "http://localhost:8000";
+
+const HEALTH_ORDER = ["OVER_BUDGET", "AT_RISK", "WITHOUT_DATA", "MISSING_TARGET", "ON_TRACK", "CANCELLED"];
+const HEALTH_COLORS = {
+  OVER_BUDGET: "#e5341a", AT_RISK: "#ff8a00", WITHOUT_DATA: "#8b5cf6",
+  MISSING_TARGET: "#eab308", ON_TRACK: "#22a06b", CANCELLED: "#a3a3a3",
+};
+const ORANGE = "#ff441f";
+
+const campaigns = DATA.campaigns;
+const dates = DATA.dates;
+
+// Si no hay logo incrustado se muestra el nombre en texto
+if (!document.getElementById("logo").getAttribute("src")) {
+  document.getElementById("logo").classList.add("hidden");
+  document.getElementById("wordmark").classList.remove("hidden");
+}
+
+Chart.defaults.font.family = "Poppins, 'Segoe UI', sans-serif";
+Chart.defaults.font.size = 11;
+Chart.defaults.color = "#7a7f8c";
+Chart.defaults.borderColor = "#f6ece8";
+Chart.defaults.plugins.legend.labels.usePointStyle = true;
+Chart.defaults.plugins.legend.labels.boxWidth = 8;
+Chart.defaults.plugins.tooltip.backgroundColor = "#23262f";
+Chart.defaults.plugins.tooltip.padding = 10;
+Chart.defaults.plugins.tooltip.cornerRadius = 8;
+
+// ---------- formato ----------
+const fmtMoney = v => v == null || isNaN(v) ? "–" : "$" + Math.round(v).toLocaleString("es-CO");
+const fmtMoneyShort = v => {
+  if (v == null || isNaN(v)) return "–";
+  if (Math.abs(v) >= 1e6) return "$" + (v / 1e6).toLocaleString("es-CO", { maximumFractionDigits: 2 }) + " M";
+  if (Math.abs(v) >= 1e3) return "$" + (v / 1e3).toLocaleString("es-CO", { maximumFractionDigits: 1 }) + " K";
+  return fmtMoney(v);
+};
+const fmtPct = (v, d = 1) => v == null || isNaN(v) ? "–" : (v * 100).toLocaleString("es-CO", { minimumFractionDigits: d, maximumFractionDigits: d }) + "%";
+const fmtNum = (v, d = 2) => v == null || isNaN(v) ? "–" : v.toLocaleString("es-CO", { minimumFractionDigits: d, maximumFractionDigits: d });
+const safeDiv = (a, b) => b ? a / b : null;
+const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const badge = h => `<span class="badge" style="background:${HEALTH_COLORS[h]}1f;color:${HEALTH_COLORS[h]}">${h}</span>`;
+
+// ---------- filtros ----------
+const filterIds = { COUNTRY: "fCountry", MAKER: "fMaker", TRADEMARK: "fTrademark", CAMPAIGN_ID: "fCampaign", CAMPAIGN_HEALTH: "fHealth" };
+const fFrom = document.getElementById("fFrom");
+const fTo = document.getElementById("fTo");
+fFrom.min = fTo.min = dates[0];
+fFrom.max = fTo.max = dates[dates.length - 1];
+
+function currentFilters() {
+  const f = {};
+  for (const [field, id] of Object.entries(filterIds)) f[field] = document.getElementById(id).value;
+  f.FROM = fFrom.value || dates[0];
+  f.TO = fTo.value || dates[dates.length - 1];
+  return f;
+}
+
+function matches(c, f, skipField) {
+  return Object.keys(filterIds).every(field => field === skipField || !f[field] || c[field] === f[field]);
+}
+
+// Cada lista muestra solo las opciones posibles según los demás filtros
+function refreshOptions() {
+  const f = currentFilters();
+  for (const [field, id] of Object.entries(filterIds)) {
+    const select = document.getElementById(id);
+    let values = [...new Set(campaigns.filter(c => matches(c, f, field)).map(c => c[field]))];
+    values = field === "CAMPAIGN_HEALTH"
+      ? HEALTH_ORDER.filter(h => values.includes(h))
+      : values.sort();
+    if (f[field] && !values.includes(f[field])) values.unshift(f[field]);
+    select.innerHTML = `<option value="">Todos</option>` +
+      values.map(v => `<option value="${escapeHtml(v)}"${v === f[field] ? " selected" : ""}>${escapeHtml(v)}</option>`).join("");
+  }
+}
+
+// ---------- cálculo ----------
+function compute() {
+  const f = currentFilters();
+  const selected = campaigns.map((c, i) => matches(c, f) ? i : -1).filter(i => i >= 0);
+  const selectedSet = new Set(selected);
+  const fromIdx = dates.findIndex(d => d >= f.FROM);
+  let toIdx = dates.length - 1;
+  while (toIdx >= 0 && dates[toIdx] > f.TO) toIdx--;
+
+  const perCampaign = new Map(selected.map(i => [i, { imp: 0, clicks: 0, spend: 0, orders: 0, sales: 0 }]));
+  const perDate = new Map();
+  for (const [ci, di, imp, clicks, spend, orders, sales] of DATA.daily) {
+    if (!selectedSet.has(ci) || di < fromIdx || di > toIdx) continue;
+    const pc = perCampaign.get(ci);
+    pc.imp += imp; pc.clicks += clicks; pc.spend += spend; pc.orders += orders; pc.sales += sales;
+    const pd = perDate.get(di) || { spend: 0, sales: 0 };
+    pd.spend += spend; pd.sales += sales;
+    perDate.set(di, pd);
+  }
+
+  const rows = selected.map(i => {
+    const c = campaigns[i], m = perCampaign.get(i);
+    return {
+      ...c, IMPRESSIONS: m.imp, CLICKS: m.clicks, SPEND: m.spend, ORDERS: m.orders, SALES: m.sales,
+      CONSUMED: safeDiv(m.spend, c.BUDGET_USD), ROAS: safeDiv(m.sales, m.spend), CTR: safeDiv(m.clicks, m.imp),
+    };
+  });
+  const total = rows.reduce((t, r) => {
+    t.budget += r.BUDGET_USD; t.spend += r.SPEND; t.sales += r.SALES;
+    t.imp += r.IMPRESSIONS; t.clicks += r.CLICKS; t.orders += r.ORDERS;
+    return t;
+  }, { budget: 0, spend: 0, sales: 0, imp: 0, clicks: 0, orders: 0 });
+
+  return { f, rows, total, perDate, fromIdx, toIdx };
+}
+
+// ---------- render ----------
+let state = null;
+let trendMode = "day";
+let metricKey = "ROAS";
+let metricDim = "COUNTRY";
+let sortKey = "PRIORITY";
+let sortDir = -1;
+
+function render() {
+  refreshOptions();
+  state = compute();
+  renderKpis();
+  renderTrend();
+  renderHealth();
+  renderMetric();
+  renderPriority();
+  renderTable();
+}
+
+function renderKpis() {
+  const t = state.total;
+  const consumed = safeDiv(t.spend, t.budget);
+  document.getElementById("kBudget").textContent = fmtMoneyShort(t.budget);
+  document.getElementById("kCampaigns").textContent = `${state.rows.length} campañas`;
+  document.getElementById("kSpend").textContent = fmtMoneyShort(t.spend);
+  document.getElementById("kConsumed").textContent = fmtPct(consumed);
+  document.getElementById("kConsumedBar").style.width = `${Math.min((consumed || 0) * 100, 100)}%`;
+  document.getElementById("kRemaining").textContent = `restante ${fmtMoneyShort(t.budget - t.spend)}`;
+  document.getElementById("kSales").textContent = fmtMoneyShort(t.sales);
+  document.getElementById("kOrders").textContent = `${t.orders.toLocaleString("es-CO")} órdenes`;
+  document.getElementById("kRoas").textContent = fmtNum(safeDiv(t.sales, t.spend));
+  document.getElementById("kCtr").textContent = fmtPct(safeDiv(t.clicks, t.imp), 2);
+  const cpm = safeDiv(t.spend, t.imp);
+  document.getElementById("kCpm").textContent = cpm == null ? "–" : "$" + fmtNum(cpm * 1000);
+}
+
+const charts = {};
+function upsertChart(id, config) {
+  if (charts[id]) {
+    charts[id].data = config.data;
+    charts[id].options = config.options;
+    charts[id].update();
+  } else {
+    charts[id] = new Chart(document.getElementById(id), config);
+  }
+}
+
+function weekStart(dateStr) {
+  const d = new Date(dateStr + "T00:00:00");
+  const day = (d.getDay() + 6) % 7; // lunes = 0
+  d.setDate(d.getDate() - day);
+  return d.toISOString().slice(0, 10);
+}
+
+function orangeFill(ctx) {
+  const { chart } = ctx;
+  if (!chart.chartArea) return "rgba(255,68,31,.12)";
+  const g = chart.ctx.createLinearGradient(0, chart.chartArea.top, 0, chart.chartArea.bottom);
+  g.addColorStop(0, "rgba(255,68,31,.28)");
+  g.addColorStop(1, "rgba(255,68,31,0)");
+  return g;
+}
+
+function renderTrend() {
+  const buckets = new Map();
+  for (let di = state.fromIdx; di <= state.toIdx; di++) {
+    const key = trendMode === "day" ? dates[di] : weekStart(dates[di]);
+    const v = state.perDate.get(di) || { spend: 0, sales: 0 };
+    const b = buckets.get(key) || { spend: 0, sales: 0 };
+    b.spend += v.spend; b.sales += v.sales;
+    buckets.set(key, b);
+  }
+  const labels = [...buckets.keys()];
+  upsertChart("trendChart", {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        { label: "Ventas atribuidas", data: labels.map(k => buckets.get(k).sales), borderColor: "#23262f", backgroundColor: "#23262f", borderWidth: 2, tension: .35, pointRadius: 0, pointHoverRadius: 4 },
+        { label: "Inversión", data: labels.map(k => buckets.get(k).spend), borderColor: ORANGE, backgroundColor: orangeFill, borderWidth: 2.5, fill: true, tension: .35, pointRadius: 0, pointHoverRadius: 4 },
+      ],
+    },
+    options: {
+      maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
+      plugins: { legend: { position: "top", align: "end" }, tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${fmtMoney(ctx.parsed.y)}` } } },
+      scales: { y: { ticks: { callback: v => fmtMoneyShort(v) }, grid: { drawTicks: false } }, x: { ticks: { maxTicksLimit: 9 }, grid: { display: false } } },
+    },
+  });
+}
+
+function renderHealth() {
+  const counts = {};
+  for (const r of state.rows) counts[r.CAMPAIGN_HEALTH] = (counts[r.CAMPAIGN_HEALTH] || 0) + 1;
+  const labels = HEALTH_ORDER.filter(h => counts[h]);
+  upsertChart("healthChart", {
+    type: "bar",
+    data: { labels, datasets: [{ data: labels.map(h => counts[h]), backgroundColor: labels.map(h => HEALTH_COLORS[h]), borderRadius: 8, barThickness: 22 }] },
+    options: {
+      indexAxis: "y", maintainAspectRatio: false, plugins: { legend: { display: false } },
+      scales: { x: { ticks: { precision: 0 }, grid: { drawTicks: false } }, y: { grid: { display: false } } },
+      onHover: (e, els) => { e.native.target.style.cursor = els.length ? "pointer" : "default"; },
+      // Clic en una barra = filtrar por ese estado
+      onClick: (_, els) => {
+        if (!els.length) return;
+        const sel = document.getElementById("fHealth");
+        const h = labels[els[0].index];
+        sel.value = sel.value === h ? "" : h;
+        render();
+      },
+    },
+  });
+}
+
+// Cada métrica se compara con su meta ponderada: ROAS por inversión, CTR y CPM por impresiones.
+// En CPM menos es mejor, por eso "peor que la meta" es estar por encima.
+const METRICS = {
+  ROAS: {
+    value: g => safeDiv(g.sales, g.spend), target: g => safeDiv(g.roasW, g.roasBase), worse: (v, t) => v < t, fmt: v => fmtNum(v),
+    note: "ventas / inversión · más alto es mejor", bad: "por debajo de la meta", good: "cumple o supera la meta",
+  },
+  CTR: {
+    value: g => safeDiv(g.clicks, g.imp), target: g => safeDiv(g.ctrW, g.ctrBase), worse: (v, t) => v < t, fmt: v => fmtPct(v, 2),
+    note: "clics / impresiones · más alto es mejor", bad: "por debajo de la meta", good: "cumple o supera la meta",
+  },
+  CPM: {
+    value: g => safeDiv(g.spend, g.imp) * 1000, target: g => safeDiv(g.cpmW, g.cpmBase), worse: (v, t) => v > t, fmt: v => "$" + fmtNum(v),
+    note: "costo por mil impresiones · es un costo: más bajo es mejor", bad: "más caro que la meta", good: "igual o más barato que la meta",
+  },
+};
+
+function renderMetric() {
+  const metric = METRICS[metricKey];
+  const groups = new Map();
+  for (const r of state.rows) {
+    const g = groups.get(r[metricDim]) || { spend: 0, sales: 0, clicks: 0, imp: 0, roasW: 0, roasBase: 0, ctrW: 0, ctrBase: 0, cpmW: 0, cpmBase: 0 };
+    g.spend += r.SPEND; g.sales += r.SALES; g.clicks += r.CLICKS; g.imp += r.IMPRESSIONS;
+    if (r.TARGET_ROAS != null) { g.roasW += r.TARGET_ROAS * r.SPEND; g.roasBase += r.SPEND; }
+    if (r.TARGET_CTR != null) { g.ctrW += r.TARGET_CTR * r.IMPRESSIONS; g.ctrBase += r.IMPRESSIONS; }
+    if (r.TARGET_CPM != null) { g.cpmW += r.TARGET_CPM * r.IMPRESSIONS; g.cpmBase += r.IMPRESSIONS; }
+    groups.set(r[metricDim], g);
+  }
+  const items = [...groups.entries()]
+    .map(([k, g]) => ({ k, value: metric.value(g), target: metric.target(g) }))
+    .filter(x => x.value != null && !isNaN(x.value))
+    .sort((a, b) => b.value - a.value);
+
+  // Barras horizontales: la altura crece con la cantidad de grupos para que los nombres no se amontonen.
+  // Con pocos grupos (países) las barras y etiquetas son más grandes para llenar la tarjeta.
+  const few = items.length <= 10;
+  const rowHeight = few ? 46 : 26;
+  document.getElementById("metricBox").style.height = `${Math.max(items.length * rowHeight + 50, 420)}px`;
+  document.getElementById("metricNote").innerHTML =
+    `${metric.note}<br><i style="background:#e5341a;margin-left:0"></i>${metric.bad}<i style="background:#ffb199"></i>${metric.good}<i style="background:#23262f;width:3px;height:12px"></i>meta`;
+
+  upsertChart("metricChart", {
+    type: "bar",
+    data: {
+      labels: items.map(x => x.k),
+      datasets: [
+        // order más bajo se dibuja encima: la meta queda sobre la barra
+        { label: metricKey, data: items.map(x => x.value), backgroundColor: items.map(x => x.target != null && metric.worse(x.value, x.target) ? "#e5341a" : "#ffb199"), borderRadius: few ? 8 : 6, barThickness: few ? 30 : 16, order: 2 },
+        { label: "Meta", data: items.map(x => x.target), type: "line", borderColor: "#23262f", backgroundColor: "#23262f", pointStyle: "line", pointRotation: 90, pointRadius: few ? 19 : 11, pointBorderWidth: 3, showLine: false, order: 1 },
+      ],
+    },
+    options: {
+      indexAxis: "y", maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${ctx.dataset.label}: ${metric.fmt(ctx.parsed.x)}`,
+            afterBody: ctx => {
+              const x = items[ctx[0].dataIndex];
+              if (x.target == null) return "Sin meta";
+              const diff = (x.value / x.target - 1) * 100;
+              return `${diff >= 0 ? "+" : ""}${fmtNum(diff, 1)}% vs meta · ${metric.worse(x.value, x.target) ? metric.bad : metric.good}`;
+            },
+          },
+        },
+      },
+      scales: {
+        x: { beginAtZero: true, grid: { drawTicks: false }, ticks: { callback: v => metric.fmt(v), font: { size: few ? 12 : 11 } } },
+        y: { grid: { display: false }, ticks: { autoSkip: false, font: { size: few ? 14 : 11, weight: few ? "600" : "400" }, color: few ? "#23262f" : "#7a7f8c" } },
+      },
+    },
+  });
+  charts.metricChart.resize(); // la altura del contenedor cambió
+}
+
+function renderPriority() {
+  const items = state.rows
+    .filter(r => r.IS_ACTIONABLE && r.PRIORITY_SCORE > 0)
+    .sort((a, b) => b.PRIORITY_SCORE - a.PRIORITY_SCORE)
+    .slice(0, 10);
+  const list = document.getElementById("priorityList");
+  if (!items.length) {
+    list.innerHTML = `<li><span class="reason">No hay campañas activas que requieran atención con estos filtros.</span></li>`;
+    return;
+  }
+  list.innerHTML = items.map(r => {
+    const level = r.PRIORITY_SCORE >= 50 ? "" : r.PRIORITY_SCORE >= 15 ? "mid" : "low";
+    return `
+    <li>
+      <div class="score ${level}">${Math.round(r.PRIORITY_SCORE)}</div>
+      <div class="info">
+        <b>${r.CAMPAIGN_ID}</b> · ${escapeHtml(r.MAKER)} · ${r.COUNTRY} ${badge(r.CAMPAIGN_HEALTH)}
+        <div class="reason">${escapeHtml(r.PRIORITY_REASON || "")} · quedan ${r.DAYS_LEFT} días</div>
+      </div>
+      <button class="link-btn" data-ask="${r.CAMPAIGN_ID}">Preguntar ›</button>
+    </li>`;
+  }).join("");
+}
+
+const COLUMNS = [
+  { key: "CAMPAIGN_ID", label: "Campaign" },
+  { key: "COUNTRY", label: "Country" },
+  { key: "MAKER", label: "Maker" },
+  { key: "TRADEMARK", label: "Trademark" },
+  { key: "OBJECTIVE", label: "Objective" },
+  { key: "STATUS", label: "Status" },
+  { key: "CAMPAIGN_HEALTH", label: "Health" },
+  { key: "BUDGET_USD", label: "Budget", num: true },
+  { key: "SPEND", label: "Spend", num: true },
+  { key: "CONSUMED", label: "Consumed", num: true },
+  { key: "SALES", label: "Sales", num: true },
+  { key: "ROAS", label: "ROAS", num: true },
+  { key: "TARGET_ROAS", label: "Meta ROAS", num: true },
+  { key: "CTR", label: "CTR", num: true },
+  { key: "TARGET_CTR", label: "Meta CTR", num: true },
+  { key: "PRIORITY", label: "Prioridad", num: true },
+];
+
+function sortValue(r, key) {
+  if (key === "PRIORITY") return r.PRIORITY_SCORE ?? -1;
+  if (key === "CAMPAIGN_HEALTH") return -HEALTH_ORDER.indexOf(r.CAMPAIGN_HEALTH);
+  return r[key] ?? -Infinity;
+}
+
+// Solo las campañas activas y vigentes tienen puntaje; al resto se le explica por qué no
+function priorityCell(r) {
+  if (r.PRIORITY_SCORE != null) return Math.round(r.PRIORITY_SCORE);
+  const reason = r.STATUS === "CANCELLED" ? ["Cancelada", "La campaña fue cancelada"]
+    : r.STATUS === "ACTIVE" ? ["Vencida", "Figura ACTIVE pero su fecha de fin ya pasó"]
+    : ["Terminada", "Ya terminó: se revisa, no se corrige"];
+  return `<span class="no-score" title="${reason[1]}">${reason[0]}</span>`;
+}
+
+function renderTable() {
+  document.getElementById("tableHead").innerHTML = COLUMNS.map(c =>
+    `<th data-key="${c.key}" style="${c.num ? "text-align:right" : ""}">${c.label}${sortKey === c.key ? (sortDir > 0 ? " ▲" : " ▼") : ""}</th>`).join("");
+
+  const rows = [...state.rows].sort((a, b) => {
+    const va = sortValue(a, sortKey), vb = sortValue(b, sortKey);
+    if (va < vb) return -sortDir;
+    if (va > vb) return sortDir;
+    return a.CAMPAIGN_ID < b.CAMPAIGN_ID ? -1 : 1;
+  });
+  document.getElementById("tableCount").textContent = `${rows.length} campañas · métricas dentro del rango de fechas`;
+
+  document.getElementById("tableBody").innerHTML = rows.map(r => {
+    const consumed = r.CONSUMED;
+    const barColor = consumed > 1 ? "#e5341a" : consumed > 0.9 ? "#ff8a00" : "#ffb199";
+    const roasClass = r.ROAS != null && r.TARGET_ROAS != null ? (r.ROAS < r.TARGET_ROAS ? "bad" : "good") : "";
+    const ctrClass = r.CTR != null && r.TARGET_CTR != null ? (r.CTR < r.TARGET_CTR ? "bad" : "good") : "";
+    return `<tr>
+      <td><b>${r.CAMPAIGN_ID}</b></td>
+      <td>${r.COUNTRY}</td>
+      <td>${escapeHtml(r.MAKER)}</td>
+      <td>${escapeHtml(r.TRADEMARK)}</td>
+      <td>${r.OBJECTIVE}</td>
+      <td>${r.STATUS}</td>
+      <td>${badge(r.CAMPAIGN_HEALTH)}</td>
+      <td class="num">${fmtMoney(r.BUDGET_USD)}</td>
+      <td class="num">${fmtMoney(r.SPEND)}</td>
+      <td><div class="bar"><span style="width:${Math.min((consumed || 0) * 100, 100)}%;background:${barColor}"></span><em>${fmtPct(consumed, 0)}</em></div></td>
+      <td class="num">${fmtMoney(r.SALES)}</td>
+      <td class="num ${roasClass}">${fmtNum(r.ROAS)}</td>
+      <td class="num">${fmtNum(r.TARGET_ROAS)}</td>
+      <td class="num ${ctrClass}">${fmtPct(r.CTR, 2)}</td>
+      <td class="num">${fmtPct(r.TARGET_CTR, 2)}</td>
+      <td class="num">${priorityCell(r)}</td>
+    </tr>`;
+  }).join("");
+}
+
+// ---------- eventos del dashboard ----------
+for (const id of Object.values(filterIds)) document.getElementById(id).addEventListener("change", render);
+fFrom.addEventListener("change", render);
+fTo.addEventListener("change", render);
+document.getElementById("moreBtn").addEventListener("click", e => {
+  const hidden = document.getElementById("moreFilters").classList.toggle("hidden");
+  e.target.classList.toggle("on", !hidden);
+});
+document.getElementById("resetBtn").addEventListener("click", () => {
+  for (const id of Object.values(filterIds)) document.getElementById(id).value = "";
+  fFrom.value = dates[0];
+  fTo.value = dates[dates.length - 1];
+  render();
+});
+
+function setupToggle(id, onChange) {
+  const el = document.getElementById(id);
+  el.addEventListener("click", e => {
+    if (e.target.tagName !== "BUTTON") return;
+    el.querySelectorAll("button").forEach(b => b.classList.toggle("active", b === e.target));
+    onChange(e.target.dataset.v);
+  });
+}
+setupToggle("trendToggle", v => { trendMode = v; renderTrend(); });
+setupToggle("metricToggle", v => { metricKey = v; renderMetric(); });
+setupToggle("dimToggle", v => { metricDim = v; renderMetric(); });
+
+document.getElementById("tableHead").addEventListener("click", e => {
+  const key = e.target.closest("th")?.dataset.key;
+  if (!key) return;
+  if (sortKey === key) sortDir = -sortDir; else { sortKey = key; sortDir = -1; }
+  renderTable();
+});
+
+// ---------- agente ----------
+const messagesEl = document.getElementById("messages");
+const chatText = document.getElementById("chatText");
+const sendBtn = document.getElementById("sendBtn");
+const history = [];
+let agentOnline = false;
+
+// Markdown mínimo: negritas, listas, tablas, código y párrafos
+function renderMarkdown(text) {
+  // Algunos modelos dejan líneas en blanco entre las filas de una tabla; se unen primero
+  const lines = escapeHtml(text).replace(/(\|[^\n]*)\n\s*\n(?=\s*\|)/g, "$1\n").replace(/(\|[^\n]*)\n\s*\n(?=\s*\|)/g, "$1\n").split("\n");
+  let html = "", listType = null, tableRows = [];
+  const inline = s => s.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/`([^`]+)`/g, "<code>$1</code>");
+  const cells = line => line.replace(/^\||\|$/g, "").split("|").map(c => inline(c.trim()));
+  const flushTable = () => {
+    if (!tableRows.length) return;
+    const [head, ...body] = tableRows.filter(r => !/^\|?\s*:?-{2,}/.test(r));
+    html += `<div class="chat-table"><table><thead><tr>${cells(head).map(c => `<th>${c}</th>`).join("")}</tr></thead>` +
+      `<tbody>${body.map(r => `<tr>${cells(r).map(c => `<td>${c}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+    tableRows = [];
+  };
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (line.startsWith("|")) {
+      if (listType) { html += `</${listType}>`; listType = null; }
+      tableRows.push(line);
+      continue;
+    }
+    flushTable();
+    const ul = line.match(/^[-*•]\s+(.*)/), ol = line.match(/^\d+[.)]\s+(.*)/);
+    const type = ul ? "ul" : ol ? "ol" : null;
+    if (listType && type !== listType) { html += `</${listType}>`; listType = null; }
+    if (type) {
+      if (!listType) { html += `<${type}>`; listType = type; }
+      html += `<li>${inline((ul || ol)[1])}</li>`;
+    } else if (line) {
+      html += `<p>${inline(line.replace(/^#+\s*/, ""))}</p>`;
+    }
+  }
+  flushTable();
+  if (listType) html += `</${listType}>`;
+  return html;
+}
+
+function addMessage(role, text, extra = "") {
+  const div = document.createElement("div");
+  div.className = `msg ${role}`;
+  div.innerHTML = role === "user" ? escapeHtml(text) : renderMarkdown(text) + extra;
+  messagesEl.appendChild(div);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+  return div;
+}
+
+function setStatus(online, text) {
+  agentOnline = online;
+  document.getElementById("agentDot").className = "dot " + (online ? "on" : "off");
+  document.getElementById("agentStatus").textContent = text;
+}
+
+async function checkAgent() {
+  try {
+    const res = await fetch(`${AGENT_URL}/health`);
+    const info = await res.json();
+    setStatus(true, info.api_key_loaded ? "Conectado" : "Conectado · falta la API key");
+  } catch {
+    setStatus(false, "Desconectado · corre: python agent/server.py");
+  }
+}
+
+function filterContext() {
+  if (currentView === "insights") {
+    return {
+      view: "insights",
+      description: "El usuario está en la pestaña Insights (5 preguntas de negocio, sin filtros). Usa la herramienta resultados_insights si la pregunta es sobre ellas.",
+    };
+  }
+  const f = state.f, t = state.total;
+  const active = Object.entries(filterIds).filter(([k]) => f[k]).map(([k]) => `${k}=${f[k]}`);
+  return {
+    filters: { ...Object.fromEntries(Object.keys(filterIds).map(k => [k, f[k] || null])), FROM: f.FROM, TO: f.TO },
+    description: active.length ? active.join(", ") : "sin filtros de campaña",
+    visible_kpis: {
+      campaigns: state.rows.length, budget: Math.round(t.budget), spend: Math.round(t.spend),
+      sales: Math.round(t.sales), roas: safeDiv(t.sales, t.spend), ctr: safeDiv(t.clicks, t.imp),
+    },
+  };
+}
+
+async function sendMessage(text) {
+  text = text.trim();
+  if (!text) return;
+  addMessage("user", text);
+  chatText.value = "";
+  if (!agentOnline) await checkAgent();
+  if (!agentOnline) {
+    addMessage("error", "El agente no está corriendo. Ábrelo con `python agent/server.py` y vuelve a intentar.");
+    return;
+  }
+  const typing = addMessage("bot", "Analizando");
+  typing.classList.add("typing");
+  sendBtn.disabled = true;
+  try {
+    const res = await fetch(`${AGENT_URL}/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text, history: history.slice(-8), context: filterContext() }),
+    });
+    const data = await res.json();
+    typing.remove();
+    if (!res.ok) throw new Error(data.detail || "Error del agente");
+    const tools = data.tools_used?.length ? `<div class="tools">Consultó: ${data.tools_used.map(escapeHtml).join(", ")}</div>` : "";
+    addMessage("bot", data.answer, tools);
+    history.push({ role: "user", content: text }, { role: "assistant", content: data.answer });
+  } catch (err) {
+    typing.remove();
+    addMessage("error", "No pude obtener respuesta: " + err.message);
+  } finally {
+    sendBtn.disabled = false;
+  }
+}
+
+sendBtn.addEventListener("click", () => sendMessage(chatText.value));
+chatText.addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(chatText.value); }
+});
+document.getElementById("suggestions").addEventListener("click", e => {
+  if (e.target.tagName === "BUTTON") sendMessage(e.target.textContent);
+});
+
+function openChat() {
+  document.getElementById("layout").classList.remove("chat-closed");
+  document.getElementById("openChat").classList.add("hidden");
+  Object.values(charts).forEach(c => c.resize());
+}
+document.getElementById("priorityList").addEventListener("click", e => {
+  const id = e.target.dataset.ask;
+  if (!id) return;
+  openChat();
+  sendMessage(`¿Por qué la campaña ${id} necesita atención y qué le recomendarías al anunciante?`);
+});
+document.getElementById("closeChat").addEventListener("click", () => {
+  document.getElementById("layout").classList.add("chat-closed");
+  document.getElementById("openChat").classList.remove("hidden");
+  Object.values(charts).forEach(c => c.resize());
+});
+document.getElementById("openChat").addEventListener("click", openChat);
+
+// ---------- pestañas ----------
+let currentView = "dashboard";
+let insightsRendered = false;
+
+document.getElementById("tabs").addEventListener("click", e => {
+  const view = e.target.dataset.view;
+  if (!view || view === currentView) return;
+  currentView = view;
+  document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("active", b.dataset.view === view));
+  document.getElementById("viewDashboard").classList.toggle("hidden", view !== "dashboard");
+  document.getElementById("viewInsights").classList.toggle("hidden", view !== "insights");
+  // Los gráficos no se pueden dibujar dentro de un contenedor oculto, por eso Insights se arma la primera vez que se abre
+  if (view === "insights" && !insightsRendered) { renderInsights(); insightsRendered = true; }
+  Object.values(charts).forEach(c => c.resize());
+  window.scrollTo({ top: 0 });
+});
+
+// ---------- insights ----------
+// Los números de los textos salen de los resultados de sql/insights.sql, no están escritos a mano
+const INS = DATA.insights;
+const pct = (v, d = 1) => fmtPct(v, d);
+const money = v => fmtMoneyShort(v);
+
+// Línea vertical de referencia (100% = en la meta) para los gráficos horizontales
+const referenceLine = {
+  id: "referenceLine",
+  afterDatasetsDraw(chart, _, opts) {
+    if (opts.value == null) return;
+    const { ctx, chartArea: { top, bottom } } = chart;
+    const x = chart.scales.x.getPixelForValue(opts.value);
+    ctx.save();
+    ctx.strokeStyle = "#23262f";
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([5, 4]);
+    ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, bottom); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = "#23262f";
+    ctx.font = "600 11px Poppins, sans-serif";
+    ctx.fillText(opts.label || "", x + 6, top + 10);
+    ctx.restore();
+  },
+};
+
+// Cada punto combina el dato técnico con lo que significa para el negocio
+function insightCard({ n, question, answer, bullets, reco, visual, ask }) {
+  return `
+  <section class="card insight" id="insight${n}">
+    <div class="q-head">
+      <div class="q-num">0${n}</div>
+      <div><h3 class="q-title">${question}</h3><p class="q-answer">${answer}</p></div>
+    </div>
+    <div class="ins-body">
+      <div>${visual}</div>
+      <div class="ins-text">
+        <h4>Qué muestran los datos</h4>
+        <ul>${bullets.map(b => `<li>${b}</li>`).join("")}</ul>
+        <h4>Qué recomendamos</h4>
+        <div class="reco">${reco}</div>
+      </div>
+    </div>
+    <div class="ins-actions">
+      <button class="btn btn-accent" data-ask-insight="${escapeHtml(ask)}">Preguntar al agente</button>
+    </div>
+  </section>`;
+}
+
+function miniTable(columns, rows) {
+  return `<div class="mini-table"><div class="table-wrap"><table class="detail-table">
+    <thead><tr>${columns.map(c => `<th style="${c.num ? "text-align:right" : ""}">${c.label}</th>`).join("")}</tr></thead>
+    <tbody>${rows.map(r => `<tr>${columns.map(c => `<td class="${c.num ? "num" : ""}">${c.render(r)}</td>`).join("")}</tr>`).join("")}</tbody>
+  </table></div></div>`;
+}
+
+function renderInsights() {
+  document.getElementById("insAsOf").textContent = DATA.meta.as_of_date;
+
+  // P1 ---------------------------------------------------------------
+  const byCountry = INS.INSIGHT_1_BY_COUNTRY;                  // viene ordenado de peor a mejor frente a la meta
+  const worst = byCountry[0];
+  const below = byCountry.filter(r => r.ROAS_VS_TARGET < 1);
+  const belowObjectives = [...new Set(below.map(r => r.OBJECTIVE))];
+  const lowestAbs = [...byCountry].sort((a, b) => a.ROAS - b.ROAS)[0];
+  const p1 = {
+    n: 1,
+    question: "¿Dónde se concentra el bajo rendimiento frente a la meta?",
+    answer: `En <b>${worst.COUNTRY}</b>: su ROAS llega solo al <b>${pct(worst.ROAS_VS_TARGET)}</b> de la meta y su CTR al <b>${pct(worst.CTR_VS_TARGET)}</b>. Los países bajo la meta de ROAS son todos de objetivo <b>${belowObjectives.join(", ")}</b>.`,
+    bullets: [
+      `Bajo la meta de ROAS: ${below.map(r => `<b>${r.COUNTRY}</b> (${pct(r.ROAS_VS_TARGET)})`).join(", ")}, todos ${belowObjectives.join(", ")}. No es un mercado puntual: es un tipo de campaña.`,
+      `En ${worst.COUNTRY}, por cada US$1 invertido se esperaban US$${fmtNum(worst.TARGET_ROAS)} en ventas y llegan US$${fmtNum(worst.ROAS)}: unos <b>${money(worst.SPEND_USD * (worst.TARGET_ROAS - worst.ROAS))} menos</b> de lo esperado.`,
+      `${worst.AT_RISK_CAMPAIGNS} de sus ${worst.CAMPAIGNS} campañas están AT_RISK (${pct(worst.AT_RISK_SPEND_PCT, 0)} de su inversión): si el anunciante no ve retorno, recorta o no renueva.`,
+      `${lowestAbs.COUNTRY} tiene el ROAS más bajo (${fmtNum(lowestAbs.ROAS)}) pero cumple su meta: es ${lowestAbs.OBJECTIVE}, busca visibilidad y no ventas.`,
+    ],
+    reco: `Revisar creativos y segmentación de las campañas TRAFFIC, empezando por ${worst.COUNTRY}, y validar si sus metas son realistas para ese mercado.`,
+    visual: `<div class="ins-chart" style="height:${below.length * 62 + 60}px"><canvas id="insChart1"></canvas></div>
+      <p class="chart-note">Solo países bajo su meta de ROAS. 100% = exactamente en la meta.</p>`,
+    ask: `Explícame por qué ${worst.COUNTRY} está tan lejos de su meta y qué campañas de ${worst.COUNTRY} explican el resultado.`,
+  };
+
+  // P2 ---------------------------------------------------------------
+  const failure = Object.fromEntries(INS.INSIGHT_2_FAILURE_TYPE.map(r => [r.FAILURE_TYPE, r]));
+  const both = failure["Falla CTR y ROAS"], ok = failure["Cumple ambas metas"];
+  const onlyOne = (failure["Solo falla ROAS"]?.CAMPAIGNS_PCT || 0) + (failure["Solo falla CTR"]?.CAMPAIGNS_PCT || 0);
+  const totalEvaluated = INS.INSIGHT_2_FAILURE_TYPE.reduce((s, r) => s + r.CAMPAIGNS, 0);
+  const p2 = {
+    n: 2,
+    question: "¿El problema es de clics, de ventas o de ambos?",
+    answer: `De ambos a la vez: el <b>${pct(both.CAMPAIGNS_PCT)}</b> de las campañas falla CTR y ROAS juntos, y solo el <b>${pct(onlyOne)}</b> falla en una sola métrica.`,
+    bullets: [
+      `Casi 1 de cada 2 campañas tiene los dos problemas: si pocos hacen clic, pocos llegan a comprar.`,
+      `Las ${totalEvaluated} campañas se parten en dos: <b>${pct(ok.CAMPAIGNS_PCT)}</b> cumple ambas metas y <b>${pct(both.CAMPAIGNS_PCT)}</b> falla ambas. Casi no hay casos intermedios.`,
+      `Las que fallan ambas manejan <b>${money(both.SPEND_USD)}</b> (${pct(both.SPEND_PCT, 0)} de la inversión), y pasa en los tres objetivos.`,
+      `Son ${both.CAMPAIGNS} y no 99 como AT_RISK porque una también se pasó del presupuesto y quedó OVER_BUDGET.`,
+    ],
+    reco: `Empezar por el CTR (creativo, segmentación, ubicación): es la puerta de entrada, y mejorarlo puede mover las dos métricas a la vez.`,
+    visual: `<div class="ins-chart"><canvas id="insChart2"></canvas></div>`,
+    ask: "¿Por qué las campañas que fallan en CTR también fallan en ROAS? ¿Qué campañas activas están en ese grupo?",
+  };
+
+  // P3 ---------------------------------------------------------------
+  const budget = Object.fromEntries(INS.INSIGHT_3_BUDGET.map(r => [r.CAMPAIGN_GROUP, r]));
+  const fin = budget["Terminadas"], act = budget["Activas vigentes"];
+  const over = INS.INSIGHT_3_OVER_BUDGET;
+  const overTotal = over.reduce((s, r) => s + r.OVERSPEND_USD, 0);
+  const at112 = over.filter(r => Math.abs(r.BUDGET_CONSUMED_PCT - 1.12) < 0.001).length;
+  const p3 = {
+    n: 3,
+    question: "¿Se ejecuta el presupuesto como se contrató?",
+    answer: `No: se gasta de menos. Las campañas terminadas ejecutaron solo el <b>${pct(fin.BUDGET_CONSUMED_PCT)}</b> de su presupuesto y dejaron <b>${money(fin.UNSPENT_BUDGET_USD)}</b> sin ejecutar.`,
+    bullets: [
+      `De cada US$100 reservados en campañas terminadas se usaron US$${Math.round(fin.BUDGET_CONSUMED_PCT * 100)}. Si Rappi cobra por entrega, lo no ejecutado es <b>ingreso que no se factura</b>.`,
+      `Las ${act.CAMPAIGNS} activas van a un ritmo de <b>${fmtNum(act.AVG_PACING_INDEX)}</b>: donde deberían llevar US$100 llevan US$${Math.round(act.AVG_PACING_INDEX * 100)}. Quedan <b>${money(act.UNSPENT_BUDGET_USD)}</b> por ejecutar.`,
+      `El sobregasto es bajo (${over.length} campañas, ${money(overTotal)}), pero ${at112} de ${over.length} se pasaron justo un <b>12%</b>: parece un tope del sistema, y ese excedente difícilmente se cobra.`,
+    ],
+    reco: `Ajustar con los makers el ritmo de las activas (pujas, segmentación más amplia) y confirmar con producto si el 12% es un tope configurado.`,
+    visual: `<div class="ins-chart" style="height:210px"><canvas id="insChart3"></canvas></div>` + miniTable([
+      { label: "Campaña", render: r => `<b>${r.CAMPAIGN_ID}</b>` },
+      { label: "Maker", render: r => escapeHtml(r.MAKER) },
+      { label: "Budget", num: true, render: r => fmtMoney(r.BUDGET_USD) },
+      { label: "Spend", num: true, render: r => fmtMoney(r.SPEND_USD) },
+      { label: "Consumido", num: true, render: r => `<span class="bad">${pct(r.BUDGET_CONSUMED_PCT)}</span>` },
+    ], over),
+    ask: "¿Por qué las campañas gastan más lento de lo previsto y qué campañas activas tienen más presupuesto sin ejecutar?",
+  };
+
+  // P4 ---------------------------------------------------------------
+  const makers = INS.INSIGHT_4_MAKERS;
+  const top3 = makers.slice(0, 3);
+  const top3Share = top3.reduce((s, r) => s + r.SHARE_OF_TOTAL_RISK, 0);
+  const noActive = top3.filter(r => r.ACTIVE_CAMPAIGNS === 0);
+  const p4 = {
+    n: 4,
+    question: "¿Qué makers concentran la inversión en riesgo?",
+    answer: `<b>${top3.map(r => r.MAKER).join(", ")}</b> concentran el <b>${pct(top3Share)}</b> de toda la inversión en campañas AT_RISK u OVER_BUDGET.`,
+    bullets: [
+      `Casi ${Math.round(top3Share * 10)} de cada 10 dólares en riesgo están en 3 de 20 anunciantes: el riesgo de no renovar está concentrado.`,
+      ...top3.map(r => `<b>${escapeHtml(r.MAKER)}</b>: ${money(r.RISK_SPEND_USD)} en riesgo (${pct(r.RISK_SPEND_PCT, 0)} de su inversión) · ${r.ACTIVE_CAMPAIGNS} activas.`),
+      noActive.length ? `${noActive.map(r => escapeHtml(r.MAKER)).join(", ")} no tiene campañas activas: ya no hay qué corregir, lo que viene es la renovación.` : "",
+    ].filter(Boolean),
+    reco: `Reunirse con estos makers antes de su renovación con un plan de mejora por campaña, empezando por los que no tienen campañas activas.`,
+    visual: `<div class="ins-chart" style="height:340px"><canvas id="insChart4"></canvas></div>`,
+    ask: `¿Qué campañas explican la inversión en riesgo de ${top3[0].MAKER} y qué le dirías en una reunión de renovación?`,
+  };
+
+  // P5 ---------------------------------------------------------------
+  const urgent = INS.INSIGHT_5_URGENT;
+  const noData = urgent.filter(r => r.CAMPAIGN_HEALTH === "WITHOUT_DATA");
+  const closing = urgent.filter(r => r.CAMPAIGN_HEALTH === "AT_RISK" && r.DAYS_LEFT <= 7);
+  const p5 = {
+    n: 5,
+    question: "¿Qué campañas requieren atención inmediata y por qué?",
+    answer: `<b>${noData.length} campañas activas no tienen ningún dato válido</b> (${money(noData.reduce((s, r) => s + r.BUDGET_USD, 0))} de presupuesto), y <b>${closing.length} campañas AT_RISK</b> terminan en 7 días o menos.`,
+    bullets: [
+      `${noData.map(r => `<b>${r.CAMPAIGN_ID}</b> (${r.DAYS_LEFT} días)`).join(" y ")}: activas y sin ningún dato. No sabemos si se muestran ni si venden, y sin medición no se pueden defender ni cobrar.`,
+      `AT_RISK que cierran pronto: ${closing.map(r => `${r.CAMPAIGN_ID} (${r.DAYS_LEFT} d)`).join(", ")}. Queda poco para corregir; sí para preparar la conversación con el maker.`,
+      `Ninguna activa gasta más rápido de lo previsto: el problema es de rendimiento, no de sobregasto.`,
+    ],
+    reco: `Hoy: revisar la medición de ${noData.map(r => r.CAMPAIGN_ID).join(" y ")}. Esta semana: creativos y segmentación de las AT_RISK con menos días.`,
+    visual: miniTable([
+      { label: "Campaña", render: r => `<b>${r.CAMPAIGN_ID}</b>` },
+      { label: "Maker", render: r => `${escapeHtml(r.MAKER)} · ${r.COUNTRY}` },
+      { label: "Health", render: r => badge(r.CAMPAIGN_HEALTH) },
+      { label: "Score", num: true, render: r => Math.round(r.PRIORITY_SCORE) },
+      { label: "Días", num: true, render: r => r.DAYS_LEFT },
+      { label: "ROAS / meta", num: true, render: r => r.ROAS == null ? "–" : `<span class="bad">${fmtNum(r.ROAS)}</span> / ${fmtNum(r.TARGET_ROAS)}` },
+      { label: "", render: r => `<button class="link-btn" data-ask="${r.CAMPAIGN_ID}">Preguntar ›</button>` },
+    ], urgent),
+    ask: "¿Qué campañas debo atender primero y qué hago con cada una esta semana?",
+  };
+
+  document.getElementById("insightCards").innerHTML = [p1, p2, p3, p4, p5].map(insightCard).join("");
+
+  // Gráficos ---------------------------------------------------------
+  // Solo los países bajo la meta de ROAS: son los que explican el hallazgo
+  new Chart(document.getElementById("insChart1"), {
+    type: "bar",
+    data: {
+      labels: below.map(r => `${r.COUNTRY} · ${r.OBJECTIVE}`),
+      datasets: [
+        { label: "ROAS vs meta", data: below.map(r => r.ROAS_VS_TARGET * 100), backgroundColor: "#e5341a", borderRadius: 6, barThickness: 18 },
+        { label: "CTR vs meta", data: below.map(r => r.CTR_VS_TARGET * 100), backgroundColor: "#ffb199", borderRadius: 6, barThickness: 18 },
+      ],
+    },
+    options: {
+      indexAxis: "y", maintainAspectRatio: false,
+      plugins: {
+        legend: { position: "top", align: "end" },
+        referenceLine: { value: 100, label: "Meta" },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${fmtNum(ctx.parsed.x, 1)}%` } },
+      },
+      scales: { x: { min: 80, max: 105, ticks: { callback: v => v + "%" } }, y: { grid: { display: false }, ticks: { font: { size: 13, weight: "600" }, color: "#23262f" } } },
+    },
+    plugins: [referenceLine],
+  });
+
+  const failureColors = { "Falla CTR y ROAS": "#e5341a", "Solo falla ROAS": "#ff8a00", "Solo falla CTR": "#ffb199", "Cumple ambas metas": "#22a06b" };
+  new Chart(document.getElementById("insChart2"), {
+    type: "doughnut",
+    data: {
+      labels: INS.INSIGHT_2_FAILURE_TYPE.map(r => r.FAILURE_TYPE),
+      datasets: [{ data: INS.INSIGHT_2_FAILURE_TYPE.map(r => r.CAMPAIGNS), backgroundColor: INS.INSIGHT_2_FAILURE_TYPE.map(r => failureColors[r.FAILURE_TYPE]), borderColor: "#fff", borderWidth: 3, hoverOffset: 8 }],
+    },
+    options: {
+      maintainAspectRatio: false, cutout: "62%",
+      plugins: {
+        legend: { position: "right" },
+        tooltip: { callbacks: { label: ctx => { const r = INS.INSIGHT_2_FAILURE_TYPE[ctx.dataIndex]; return ` ${r.CAMPAIGNS} campañas (${pct(r.CAMPAIGNS_PCT)}) · ${money(r.SPEND_USD)}`; } } },
+      },
+    },
+  });
+
+  const budgetRows = INS.INSIGHT_3_BUDGET;
+  new Chart(document.getElementById("insChart3"), {
+    type: "bar",
+    data: {
+      labels: budgetRows.map(r => `${r.CAMPAIGN_GROUP} (${r.CAMPAIGNS})`),
+      datasets: [
+        { label: "Ejecutado", data: budgetRows.map(r => r.SPEND_USD), backgroundColor: "#ff441f", borderRadius: 6, barThickness: 22 },
+        { label: "Sin ejecutar", data: budgetRows.map(r => r.UNSPENT_BUDGET_USD), backgroundColor: "#ffd9cd", borderRadius: 6, barThickness: 22 },
+      ],
+    },
+    options: {
+      indexAxis: "y", maintainAspectRatio: false,
+      plugins: { legend: { position: "top", align: "end" }, tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${fmtMoney(ctx.parsed.x)}` } } },
+      scales: { x: { stacked: true, ticks: { callback: v => fmtMoneyShort(v) } }, y: { stacked: true, grid: { display: false }, ticks: { font: { size: 12, weight: "600" }, color: "#23262f" } } },
+    },
+  });
+
+  const topMakers = makers.slice(0, 10);
+  new Chart(document.getElementById("insChart4"), {
+    type: "bar",
+    data: {
+      labels: topMakers.map(r => r.MAKER),
+      datasets: [
+        { label: "Inversión en riesgo", data: topMakers.map(r => r.RISK_SPEND_USD), backgroundColor: topMakers.map((_, i) => i < 3 ? "#e5341a" : "#ff8a65"), borderRadius: 6, barThickness: 18 },
+        { label: "Resto de la inversión", data: topMakers.map(r => r.SPEND_USD - r.RISK_SPEND_USD), backgroundColor: "#ffe3da", borderRadius: 6, barThickness: 18 },
+      ],
+    },
+    options: {
+      indexAxis: "y", maintainAspectRatio: false,
+      plugins: {
+        legend: { position: "top", align: "end" },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${fmtMoney(ctx.parsed.x)}`, afterBody: ctx => `${pct(topMakers[ctx[0].dataIndex].RISK_SPEND_PCT)} de su inversión está en riesgo` } },
+      },
+      scales: { x: { stacked: true, ticks: { callback: v => fmtMoneyShort(v) } }, y: { stacked: true, grid: { display: false }, ticks: { font: { size: 12, weight: "600" }, color: "#23262f" } } },
+    },
+  });
+}
+
+document.getElementById("insightCards").addEventListener("click", e => {
+  const askBtn = e.target.closest("[data-ask-insight]");
+  const campaignBtn = e.target.closest("[data-ask]");
+  if (askBtn || campaignBtn) {
+    openChat();
+    sendMessage(askBtn ? askBtn.dataset.askInsight
+      : `¿Por qué la campaña ${campaignBtn.dataset.ask} necesita atención y qué le recomendarías al anunciante?`);
+  }
+});
+
+// ---------- inicio ----------
+document.getElementById("updatedAt").textContent = DATA.meta.max_updated_at;
+document.getElementById("asOf").textContent = DATA.meta.as_of_date;
+fFrom.value = dates[0];
+fTo.value = dates[dates.length - 1];
+render();
+checkAgent();
+</script>
+</body>
+</html>

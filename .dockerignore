@@ -1,0 +1,6 @@
+# La llave nunca entra a la imagen: se pasa con env_file al ejecutar
+agent/.env
+**/__pycache__
+outputs
+visualization/dashboard.html
+*.zip

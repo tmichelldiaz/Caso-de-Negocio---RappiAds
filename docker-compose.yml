@@ -1,0 +1,10 @@
+services:
+  rappi-ads:
+    build: .
+    ports:
+      - "8080:8080"   # dashboard: http://localhost:8080/dashboard.html
+      - "8000:8000"   # agente
+    # La API key se lee de agent/.env si existe; sin ella el dashboard funciona y el chat avisa que falta
+    env_file:
+      - path: agent/.env
+        required: false

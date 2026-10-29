@@ -1,0 +1,8 @@
+pandas
+duckdb
+# Solo para el agente (opcional)
+langchain==0.3.26
+langchain-openai==0.3.28
+fastapi==0.115.12
+uvicorn==0.34.3
+python-dotenv
